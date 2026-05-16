@@ -1,10 +1,13 @@
-# Dependencies
+# Dependencies & Build
 node_modules/
 .next/
 .vercel/
 *.local
+out/
+build/
+dist/
 
-# Environment
+# Environment — JANGAN push ke GitHub!
 .env
 .env.local
 .env.development.local
@@ -14,13 +17,15 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+*.tzt
+scrp.tzt
+
+# Internal planning docs — tidak perlu di-publish
+AGENT.md
+INSTALL-SYSTEM.md
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Build outputs
-dist/
-out/
-build/
+.pnpm-debug.log*
