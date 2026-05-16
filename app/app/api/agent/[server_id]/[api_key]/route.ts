@@ -28,16 +28,19 @@ export async function GET(
   const templatePath = path.join(process.cwd(), 'public', 'agent-template.sh')
   let script = fs.readFileSync(templatePath, 'utf-8')
 
-  // Inject credentials
+  // Inject credentials + normalize to Unix line endings (LF only)
   script = script
     .replace(/\{\{SERVER_ID\}\}/g, server_id)
     .replace(/\{\{SUPABASE_URL\}\}/g, process.env.NEXT_PUBLIC_SUPABASE_URL!)
     .replace(/\{\{SUPABASE_KEY\}\}/g, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    .replace(/\r\n/g, '\n')   // CRLF → LF
+    .replace(/\r/g, '\n')     // stray CR → LF
 
   return new NextResponse(script, {
     headers: {
-      'Content-Type': 'text/plain',
+      'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
     },
   })
 }
