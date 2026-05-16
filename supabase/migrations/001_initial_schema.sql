@@ -111,38 +111,11 @@ ALTER PUBLICATION supabase_realtime ADD TABLE services_status;
 ALTER PUBLICATION supabase_realtime ADD TABLE servers;
 
 -- ================================================
--- AUTO CLEANUP via pg_cron (Supabase built-in)
--- Enable pg_cron: Dashboard > Database > Extensions > pg_cron
+-- AUTO CLEANUP via pg_cron (OPSIONAL)
 -- ================================================
+-- LANGKAH:
+-- 1. Buka Supabase Dashboard > Database > Extensions
+-- 2. Aktifkan "pg_cron"
+-- 3. Jalankan file: 002_cron_cleanup.sql
+-- (Jangan jalankan section ini tanpa pg_cron aktif)
 
--- Hapus snapshots > 1 jam (jalankan setiap jam)
-SELECT cron.schedule(
-  'cleanup-snapshots',
-  '0 * * * *',
-  $$DELETE FROM metrics_snapshots WHERE created_at < NOW() - INTERVAL '1 hour'$$
-);
-
--- Hapus logs > 7 hari (jalankan setiap hari jam 2 pagi)
-SELECT cron.schedule(
-  'cleanup-logs',
-  '0 2 * * *',
-  $$DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '7 days'$$
-);
-
--- Hapus history > 30 hari
-SELECT cron.schedule(
-  'cleanup-history',
-  '30 2 * * *',
-  $$DELETE FROM metrics_history WHERE recorded_at < NOW() - INTERVAL '30 days'$$
-);
-
--- ================================================
--- ROW LEVEL SECURITY (Opsional - untuk keamanan extra)
--- ================================================
--- Disable RLS untuk sekarang (pakai API key di level app)
--- Kalau mau enable, uncomment di bawah:
-
--- ALTER TABLE servers ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE metrics_snapshots ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "public_read" ON metrics_snapshots FOR SELECT USING (true);
--- CREATE POLICY "service_insert" ON metrics_snapshots FOR INSERT WITH CHECK (true);
