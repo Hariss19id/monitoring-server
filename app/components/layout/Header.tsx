@@ -74,7 +74,7 @@ export default function Header() {
             <span>{timeAgo(lastSeen)}</span>
           </div>
         )}
-        <div className="text-xs font-mono text-gray-400 hidden md:block">
+        <div className="text-xs font-mono text-gray-400 hidden md:block" suppressHydrationWarning>
           {time.toLocaleTimeString('id-ID')}
         </div>
       </div>

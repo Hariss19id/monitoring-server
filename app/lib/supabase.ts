@@ -1,29 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-export function createSupabaseClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+let _client: SupabaseClient | null = null
 
-// Singleton for client-side use
-let _client: ReturnType<typeof createSupabaseClient> | null = null
-
-export function getSupabaseClient() {
-  if (typeof window === 'undefined') {
-    // Server-side: always create fresh (but shouldn't be called during build)
-    return createSupabaseClient()
-  }
+export function getSupabaseClient(): SupabaseClient {
   if (!_client) {
-    _client = createSupabaseClient()
+    _client = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
   }
   return _client
 }
 
-// Default export used in hooks/components
-export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
-  get(_target, prop) {
-    return getSupabaseClient()[prop as keyof ReturnType<typeof createSupabaseClient>]
-  },
-})
+// Named export for use in hooks and components
+// Always call getSupabaseClient() at runtime, never at module level
+export const supabase = {
+  from: (table: string) => getSupabaseClient().from(table),
+  channel: (name: string) => getSupabaseClient().channel(name),
+  removeChannel: (channel: ReturnType<SupabaseClient['channel']>) =>
+    getSupabaseClient().removeChannel(channel),
+}
