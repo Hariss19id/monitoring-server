@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app.vercel.app'
-  const scriptUrl = `${baseUrl}/api/agent/${server_id}/${api_key}`
+  const scriptUrl    = `${baseUrl}/api/agent/${server_id}/${api_key}`
+  const uninstallUrl = `${baseUrl}/api/uninstall/${server_id}/${api_key}`
 
   const install_command =
     `script_name="monitor-agent.sh"; ` +
@@ -43,5 +44,11 @@ export async function POST(req: NextRequest) {
     `echo "* * * * * /bin/bash $PWD/$script_name") | crontab -; ` +
     `echo "✅ Monitor berhasil diinstal!"`
 
-  return NextResponse.json({ server_id, api_key, install_command })
+  const uninstall_command =
+    `u="uninstall-monitor.sh"; ` +
+    `curl -fsSL "${uninstallUrl}" -o "$PWD/$u" ` +
+    `|| wget -O "$PWD/$u" "${uninstallUrl}"; ` +
+    `chmod +x "$PWD/$u"; bash "$PWD/$u"`
+
+  return NextResponse.json({ server_id, api_key, install_command, uninstall_command })
 }

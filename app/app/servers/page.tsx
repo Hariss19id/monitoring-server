@@ -14,7 +14,8 @@ export default function ServersPage() {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [installCmd, setInstallCmd] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [uninstallCmd, setUninstallCmd] = useState('')
+  const [copied, setCopied] = useState<'install'|'uninstall'|null>(null)
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -41,6 +42,7 @@ export default function ServersPage() {
       const data = await res.json()
       if (data.error) { setError(data.error); return }
       setInstallCmd(data.install_command)
+      setUninstallCmd(data.uninstall_command || '')
       setName('')
       await fetchServers()
     } catch {
@@ -56,10 +58,11 @@ export default function ServersPage() {
     await fetchServers()
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(installCmd)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = (type: 'install' | 'uninstall') => {
+    const text = type === 'install' ? installCmd : uninstallCmd
+    navigator.clipboard.writeText(text)
+    setCopied(type)
+    setTimeout(() => setCopied(null), 2000)
   }
 
   return (
@@ -106,24 +109,43 @@ export default function ServersPage() {
 
             {/* Install command */}
             {installCmd && (
-              <div className="mt-4">
-                <p className="text-xs text-gray-400 mb-2">📋 Jalankan perintah ini di terminal VPS Anda:</p>
-                <div className="relative bg-[#0A0E1A] border border-indigo-500/30 rounded-lg p-4">
-                  <code className="text-xs text-emerald-400 font-mono break-all leading-relaxed">
-                    {installCmd}
-                  </code>
-                  <button
-                    onClick={handleCopy}
-                    className="absolute top-3 right-3 p-1.5 bg-[#1F2937] rounded-md hover:bg-[#374151] transition-colors"
-                  >
-                    {copied
-                      ? <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      : <Copy className="w-3.5 h-3.5 text-gray-400" />
-                    }
-                  </button>
+              <div className="mt-4 space-y-3">
+                {/* Install command */}
+                <div>
+                  <p className="text-xs text-gray-400 mb-2">📋 <strong>Install</strong> — Jalankan di terminal VPS:</p>
+                  <div className="relative bg-[#0A0E1A] border border-indigo-500/30 rounded-lg p-4">
+                    <code className="text-xs text-emerald-400 font-mono break-all leading-relaxed pr-8">{installCmd}</code>
+                    <button
+                      onClick={() => handleCopy('install')}
+                      className="absolute top-3 right-3 p-1.5 bg-[#1F2937] rounded-md hover:bg-[#374151] transition-colors"
+                    >
+                      {copied === 'install'
+                        ? <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  ⏱ Server akan muncul otomatis dalam ~30 detik setelah agent berjalan
+
+                {/* Uninstall command */}
+                {uninstallCmd && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-2">🗑️ <strong>Uninstall</strong> — Jalankan di terminal VPS untuk menghapus agent:</p>
+                    <div className="relative bg-[#0A0E1A] border border-red-500/20 rounded-lg p-4">
+                      <code className="text-xs text-red-400 font-mono break-all leading-relaxed pr-8">{uninstallCmd}</code>
+                      <button
+                        onClick={() => handleCopy('uninstall')}
+                        className="absolute top-3 right-3 p-1.5 bg-[#1F2937] rounded-md hover:bg-[#374151] transition-colors"
+                      >
+                        {copied === 'uninstall'
+                          ? <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-600">
+                  ⏱ Server muncul otomatis dalam ~30 detik setelah agent berjalan
                 </p>
               </div>
             )}
